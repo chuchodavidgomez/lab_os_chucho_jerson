@@ -9,30 +9,15 @@
 
 int main(int argc, char *argv[])
 {
-	char *cwd;
-	char buff[PATH_MAX + 1];
-	cwd = getcwd(buff, PATH_MAX + 1);
-	if (cwd != NULL)
-	{
-		printf("%sUsted se encuentra parado en: %s%s\n",MARRON,BLANCO,cwd);
-	}
-	if (chdir("sources") != 0)
-		{
-			printf("Error: %sEl directorio ingresado no existe o lo escribio de forma incorrecta\n",ROJO);
-		}		
-		cwd = getcwd(buff, PATH_MAX + 1);
-		if (cwd != NULL)
-		{
-			printf("%sUsted se encuentra parado en: %s%s.\n",MARRON,BLANCO,cwd);
-		}
+	chdir("sources");
 	struct timeval start, end;
 	char num[10];	
 	char num2[10];	
-	char filename[80] = "benchmark/vec_10_1_a.txt";
-    char filename2[80] = "benchmark/vec_10_1_b.txt";
+	char filename[80] = "benchmark/";
+    char filename2[80] = "benchmark/";
 	int resultado = 0;
-    //strcat(filename,argv[1]);
-    //strcat(filename2,argv[2]);	
+    strcat(filename,argv[1]);
+    strcat(filename2,argv[2]);	
 	FILE *inputFile;
 	FILE *inputFile2;
 	inputFile = fopen(filename,"r");

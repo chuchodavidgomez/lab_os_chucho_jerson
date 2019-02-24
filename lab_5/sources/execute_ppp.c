@@ -15,6 +15,8 @@ pthread_mutex_t lock,lock2;
 int cont_hilos;
 long seconds;
 long micros;
+long seconds_open;
+long micros_open;
 
 int calcula_tam(){
     int tam = 1;
@@ -36,18 +38,22 @@ void* multiplica_seccion(void* data)
     char num2[10];
 	int resultado = 0;
     int pos_final;
-    struct timeval start, end;
+    struct timeval start, end, start_open, end_open;
+    FILE *inputFile;
+	FILE *inputFile2;
+
+    gettimeofday(&start_open,NULL);
+        inputFile = fopen(ptr_filename,"r");
+	    inputFile2 = fopen(ptr_filename2,"r");
+    gettimeofday(&end_open,NULL);
 
     pthread_mutex_lock(&lock);
         pos = cont_hilos;
         cont_hilos--;
+        seconds_open += (end_open.tv_sec - start_open.tv_sec);
+        micros_open += ((seconds_open * 1000000) + end_open.tv_usec) - (start_open.tv_usec);
     pthread_mutex_unlock(&lock);
 
-	FILE *inputFile;
-	FILE *inputFile2;
-	inputFile = fopen(ptr_filename,"r");
-	inputFile2 = fopen(ptr_filename2,"r");
-    
     if(inputFile == NULL) {
         printf("Error al abrir el archivo %s\n", ptr_filename);
         return 0;
@@ -63,6 +69,7 @@ void* multiplica_seccion(void* data)
     }else{
         pos_final = *(ptr_posiciones+pos+1);
     }    
+
     fseek(inputFile,*(ptr_posiciones+pos),SEEK_SET);
     fseek(inputFile2,*(ptr_posiciones+pos+n_hilos),SEEK_SET);
 
@@ -87,7 +94,8 @@ void* multiplica_seccion(void* data)
 }
 
 int main(int argc, char *argv[])
-{            
+{         
+    chdir("sources");   
 	char filename[80] = "benchmark/";
     char filename2[80] = "benchmark/";
     strcat(filename,argv[1]);
@@ -175,7 +183,9 @@ int main(int argc, char *argv[])
     {
         pthread_join(threads_ids[i],NULL);        
     }     
-    printf("%sEl tiempo promedio que se tardo en realizar la operacion fue de:%s %lds (%ldms)\n", BLANCO, VERDE, seconds/n_hilos, micros/n_hilos);
+    printf("%sEl tiempo promedio que se tardo en realizar la operacion de multiplicación fue de:%s %lds (%ldms)\n", BLANCO, VERDE, seconds/n_hilos, micros/n_hilos);
+    printf("%sEl tiempo promedio que se tardo en abrir los archivos fue de:%s %lds (%ldms)\n", BLANCO, VERDE, seconds_open/n_hilos, micros_open/n_hilos);
+    printf("%sEl tiempo total que se tardo cada hilo fue:%s %lds (%ldms)\n", BLANCO, VERDE, (seconds_open+seconds)/n_hilos, (micros_open+micros)/n_hilos);
 	printf("%sEl Resultado obtenido en la multiplicación paralela fue:%s %d\n", BLANCO,MARRON,result);
     pthread_mutex_destroy(&lock);
     pthread_mutex_destroy(&lock2);
